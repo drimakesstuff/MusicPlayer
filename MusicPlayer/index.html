@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Playlist</title>
+  <style>
+    /* Your existing styles */
+    body {
+      margin:0; padding:0; background:#230112; font-family:sans-serif; color: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    /* (rest of your CSS unchanged) */
+    #mainContainer {
+      display: flex;
+      align-items: center;
+      background-color: #ff66b2;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    #leftStack {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 250px;
+      margin-right: 20px;
+    }
+    #leftStack > div {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    #leftStack img {
+      width: 100px;
+      height: 70px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    #leftStack p {
+      margin: 10px 0 0;
+      font-weight: bold;
+      color: #333;
+    }
+    #patrickContainer img {
+      max-height: 250px;
+      width: auto;
+      border-radius: 10px;
+    }
+    #playlistSection {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #440026;
+      padding: 20px;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      color: white;
+      z-index: 1000;
+      border-radius: 0;
+    }
+    #playlistContent {
+      display: flex;
+      flex-direction: column;
+      width: 350px;
+      height: 300px;
+      background: #ff66b2;
+      border-radius: 12px;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+    #playlistList {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      max-height: 400px;
+    }
+    .songItem {
+      display: flex;
+      align-items: center;
+      background: #882056;
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .songItem.selected {
+      background: #bb2649;
+    }
+    .songItem img {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      margin-right: 12px;
+    }
+    .songTitle {
+      flex-grow: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .btnDelete {
+      background: #bb2649;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    #playerControls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #000;
+      border-radius: 5px;
+      height: 8px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 350px;
+    }
+    #volumeControl::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #480011;
+      cursor: pointer;
+      border-radius: 50%;
+      border: 1px solid white;
+      margin-top: -5px;
+    }
+    #volumeControl::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: rgb(118, 19, 19);
+      cursor: pointer;
+      border-radius: 50%;
+      border: 1px solid white;
+    }
+    #seekBar::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #480011;
+      cursor: pointer;
+      border-radius: 50%;
+      border: none;
+      margin-top: -5px;
+    }
+    #seekBar::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: #480011;
+      cursor: pointer;
+      border-radius: 50%;
+      border: none;
+    }
+    #timestamps {
+      font-size: 14px;
+      width: 100%;
+      max-width: 350px;
+      display: flex;
+      justify-content: space-between;
+      color: #480011;
+    }
+    #backBtn {
+      align-self: flex-start;
+      margin-bottom: 10px;
+      background: #480011;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      user-select: none;
+    }
+    #controlButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#controlButtons button {
+  background: #480011;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+@keyframes flashDisco {
+  0% { background-color: #440026; }
+  25% { background-color: #660033; }
+  50% { background-color: #ff0080; }
+  75% { background-color: #cc0055; }
+  100% { background-color: #440026; }
+}
+
+.flash-effect {
+  animation: flashDisco 1s infinite;
+}
+
+  </style>
+</head>
+<body>
+
+  <div id="mainContainer">
+    <div id="leftStack">
+      <div id="playlistDiv" tabindex="0" role="button" aria-label="Open playlist">
+        <img src="snoopy1.jpg" alt="Playlist" />
+        <p>Playlist</p>
+      </div>
+
+      <div id="addSongs" tabindex="0" role="button" aria-label="Add songs">
+        <img src="snoopy2.jpg" alt="Add Songs" />
+        <p>Add Songs</p>
+      </div>
+    </div>
+
+    <div id="patrickContainer">
+      <img src="patrick.jpg" alt="Patrick" />
+    </div>
+  </div>
+
+  <!-- Playlist Section -->
+  <div id="playlistSection">
+    <div id="playlistContent">
+      <button id="backBtn">Back</button>
+      <div id="playlistList"></div>
+
+      <div id="playerControls">
+        <audio id="audioPlayer"></audio>
+      
+        <div id="controlButtons">
+          <button id="playBtn">▶ Play</button>
+          <button id="pauseBtn">⏸ Pause</button>
+          <button id="stopBtn">⏹ Stop</button>
+        </div>
+      
+        <input type="range" id="seekBar" value="0" min="0" max="100" step="1" />
+        <div id="timestamps">
+          <span id="currentTime">0:00</span>
+          <span id="duration">0:00</span>
+        </div>
+      
+        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.4" title="Volume" />
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    const playlistDiv = document.getElementById('playlistDiv');
+    const addSongsDiv = document.getElementById('addSongs');
+    const mainContainer = document.getElementById('mainContainer');
+    const playlistSection = document.getElementById('playlistSection');
+    const backBtn = document.getElementById('backBtn');
+    const playlistList = document.getElementById('playlistList');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const seekBar = document.getElementById('seekBar');
+    const volumeControl = document.getElementById('volumeControl');
+    const currentTimeSpan = document.getElementById('currentTime');
+    const durationSpan = document.getElementById('duration');
+
+    // Playlist is now an array of objects: { name: string, dataUrl: string }
+    let playlist = [];
+    let currentIndex = -1;
+    let isSeeking = false;
+
+    // Load playlist from localStorage on page load
+    function loadPlaylist() {
+      const saved = localStorage.getItem('playlist');
+      if (saved) {
+        try {
+          playlist = JSON.parse(saved);
+        } catch {
+          playlist = [];
+        }
+      }
+    }
+
+    // Save playlist to localStorage
+    function savePlaylist() {
+      localStorage.setItem('playlist', JSON.stringify(playlist));
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function renderPlaylist() {
+      playlistList.innerHTML = '';
+      if (playlist.length === 0) {
+        playlistList.innerHTML = '<p>No songs added yet.</p>';
+        return;
+      }
+      playlist.forEach(({name}, idx) => {
+        const div = document.createElement('div');
+        div.classList.add('songItem');
+        if (idx === currentIndex) div.classList.add('selected');
+
+        const img = document.createElement('img');
+        img.src = 'snoopy1.jpg';
+        img.alt = 'Snoopy icon';
+
+        const title = document.createElement('div');
+        title.classList.add('songTitle');
+        title.textContent = name;
+
+        const btnDelete = document.createElement('button');
+        btnDelete.textContent = 'Delete';
+        btnDelete.classList.add('btnDelete');
+        btnDelete.onclick = e => {
+          e.stopPropagation();
+          deleteSong(idx);
+        };
+
+        div.onclick = () => playSong(idx);
+
+        div.appendChild(img);
+        div.appendChild(title);
+        div.appendChild(btnDelete);
+
+        playlistList.appendChild(div);
+      });
+    }
+
+    function deleteSong(idx) {
+      if (idx === currentIndex) {
+        audioPlayer.pause();
+        audioPlayer.src = '';
+        currentIndex = -1;
+      } else if (idx < currentIndex) {
+        currentIndex--;
+      }
+      playlist.splice(idx, 1);
+      savePlaylist();
+      renderPlaylist();
+    }
+
+    function playSong(idx) {
+      if (idx < 0 || idx >= playlist.length) return;
+      currentIndex = idx;
+      audioPlayer.src = playlist[idx].dataUrl;
+      audioPlayer.play();
+      renderPlaylist();
+    }
+
+    volumeControl.addEventListener('input', () => {
+      audioPlayer.volume = volumeControl.value;
+    });
+
+    seekBar.addEventListener('input', () => {
+      isSeeking = true;
+    });
+    seekBar.addEventListener('change', () => {
+      if (audioPlayer.duration) {
+        audioPlayer.currentTime = seekBar.value;
+      }
+      isSeeking = false;
+    });
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (!isSeeking) {
+        seekBar.max = audioPlayer.duration || 100;
+        seekBar.value = audioPlayer.currentTime;
+        currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+        durationSpan.textContent = formatTime(audioPlayer.duration || 0);
+      }
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+      if (currentIndex + 1 < playlist.length) {
+        playSong(currentIndex + 1);
+      }
+    });
+
+    addSongsDiv.onclick = () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'audio/*';
+      input.multiple = true;
+      input.onchange = async e => {
+        const files = Array.from(e.target.files);
+        // Read files as DataURL to store in localStorage
+        for (const file of files) {
+          const dataUrl = await readFileAsDataURL(file);
+          playlist.push({name: file.name, dataUrl});
+        }
+        savePlaylist();
+        renderPlaylist();
+      };
+      input.click();
+    };
+
+    playlistDiv.onclick = () => {
+      mainContainer.style.display = 'none';
+      playlistSection.style.display = 'flex';
+      renderPlaylist();
+    };
+
+    backBtn.onclick = () => {
+      audioPlayer.pause();
+      audioPlayer.src = '';
+      currentIndex = -1;
+      playlistSection.style.display = 'none';
+      mainContainer.style.display = 'flex';
+      renderPlaylist();
+    };
+
+    // Helper function: read file as base64 DataURL
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject('Failed to read file');
+        reader.readAsDataURL(file);
+      });
+    }
+    // Control buttons
+document.getElementById('playBtn').onclick = () => {
+  if (currentIndex >= 0) {
+    audioPlayer.play();
+  } else if (playlist.length > 0) {
+    playSong(0); // play first song if none is selected
+  }
+};
+
+document.getElementById('pauseBtn').onclick = () => {
+  audioPlayer.pause();
+};
+
+document.getElementById('stopBtn').onclick = () => {
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
+};
+
+    // Initialize
+    loadPlaylist();
+    audioPlayer.volume = volumeControl.value;
+  </script>
+
+</body>
+</html>
