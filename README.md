@@ -42,6 +42,6 @@ Add, play, and manage your songs right in your browser—no backend required.
 - Works best in modern browsers like Chrome or Firefox.  
 
 ---
+## Author
 
-Made by **Dri**
-
+Dri – BSc Data Science student
